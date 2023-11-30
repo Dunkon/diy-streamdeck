@@ -1,19 +1,28 @@
-#include <Analog4x4Keypad.h>
-#define KEYBOARD_PIN A10
+#define ANALOGPORT    A10
+#define DEBOUNCE 700
+#define DEBOUNCE_RELEASE 15
+#define ZERO_BUTTON 239
 #include <Keyboard.h>
+#include "AnalogKeypad.h"
 
-void setup() {
-  Serial.begin(9600);
-  pinMode(KEYBOARD_PIN, INPUT);
+AnalogKeypad AKP(ANALOGPORT);
+uint32_t start, stop;
+
+void setup()
+{
+  Serial.begin(115200);
+  pinMode(ANALOGPORT, INPUT);
   Keyboard.begin();
 }
 
-void loop() {
-  if (analogRead(KEYBOARD_PIN) > 0) {
-    Serial.print(analogRead(KEYBOARD_PIN));
-    AnalogKeypad a = AnalogKeypad{KEYBOARD_PIN};
-    Keyboard.press(a.getbutton() + 240);
+void loop()
+{
+  int button = AKP.pressed();
+  if (button > 0) {
+    Serial.print(AKP.pressed());
+    Keyboard.press(button + ZERO_BUTTON);
+    delay(DEBOUNCE_RELEASE);
     Keyboard.releaseAll();
-    Serial.print(a.getbutton());
+    delay(DEBOUNCE);
   }
 }
